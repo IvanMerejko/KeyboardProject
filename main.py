@@ -2,8 +2,6 @@ from pynput.keyboard import Key, Listener
 import datetime
 
 
-is_released = False
-
 
 def on_press(key):
 
