@@ -47,7 +47,7 @@ width = np.diff(bins)
 center = (bins[:-1] + bins[1:]) / 2
 
 fig, ax = plt.subplots()
-ax.bar(center, hist, align='center', width=width)
+ax.bar(center, hist, align='center', width=width, fill = False)
 ax.set_xticks(bins)
 
 fig.savefig("out.png")
