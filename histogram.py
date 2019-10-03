@@ -7,8 +7,23 @@ from datetime import datetime
 letters_name_array = []
 letters_str = 'letters'
 current_field_from_json_file = 'duration'
+labels_name_array = []
 array = []
 x = [0.0]
+
+
+def create_labels_name(ax1):
+    rects = ax1.patches
+
+    for rect, label in zip(rects, labels_name_array):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width() / 2, height + 1, label,
+                ha='center', va='bottom')
+
+
+def append_n_times(append_to, value, time_number):
+    for i in range(0, time_number):
+        append_to.append(value)
 
 
 def create_y_labels_name(ax1):
@@ -49,28 +64,37 @@ def parse_to_microsecond(field):
 
 with open('log.json') as file:
     data = json.load(file)
-    print(data['letters'][0])
-    last_character = get_letter_name_from_str(data[letters_str][0]['name'])
+    first_letter = data['letters'][0]
+    last_character = get_letter_name_from_str(first_letter['name'])
 
-    # x.append((parse_to_seconds(data['letters'][0]['pressed']) +
-    #           parse_to_microsecond(data['letters'][0]['pressed'])/1000000) * 10)
+    first_letter_time = (parse_to_seconds(first_letter['pressed']) +
+                         parse_to_microsecond(first_letter['pressed'])/1000000) * 10
+    append_n_times(x, first_letter_time, ord('a')-1)
 
-    array.append((parse_to_seconds(data['letters'][0]['pressed']) +
-                 parse_to_microsecond(data['letters'][0]['pressed'])/1000000) * 10)
-    array.append((parse_to_seconds(data['letters'][0]['released']) +
-                 parse_to_microsecond(data['letters'][0]['released'])/1000000) * 10)
+    array.append((parse_to_seconds(first_letter['pressed']) +
+                 parse_to_microsecond(first_letter['pressed'])/1000000) * 10)
+    array.append((parse_to_seconds(first_letter['released']) +
+                 parse_to_microsecond(first_letter['released'])/1000000) * 10)
+
+    if current_field_from_json_file == 'time_after_last_press':
+        labels_name_array.append(0)
+    else:
+        second = parse_to_seconds(first_letter[current_field_from_json_file])
+        microsecond = parse_to_microsecond(first_letter[current_field_from_json_file])
+        labels_name_array.append(second + microsecond / 1000000)
 
     for letter_info in data['letters'][1::1]:
         letters_name_array.append(last_character)
         last_value = array[len(array) - 1]
-        for push_time in range(0, ord(last_character)):
-            x.append(last_value)
+        append_n_times(x, last_value, ord(last_character))
         last_character = get_letter_name_from_str(letter_info['name'])
-        array.append(last_value + (parse_to_seconds(letter_info[current_field_from_json_file]) +
-                     parse_to_microsecond(letter_info[current_field_from_json_file]) / 1000000) * 10)
+        second = parse_to_seconds(letter_info[current_field_from_json_file])
+        microsecond = parse_to_microsecond(letter_info[current_field_from_json_file])
+        labels_name_array.append(second + microsecond/1000000)
+        array.append(last_value + (second + microsecond/1000000) * 10)
 
     letters_name_array.append(last_character)
-
+print(labels_name_array)
 bins = array
 hist, bins = np.histogram(x, bins=bins)
 
@@ -84,6 +108,7 @@ ax.bar(center, hist, align='center', width=width, fill=False, edgecolor='r', lin
 ax.set_xticks(bins)
 ax.set_xticklabels(create_x_labels_name(ax))
 ax.set_yticklabels(create_y_labels_name(ax))
+create_labels_name(ax)
 ax.grid(which='major',
         color='k')
 fig.savefig("out.png")
