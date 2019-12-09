@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
+from matplotlib.figure import Figure
 import numpy as np
 import json
 from datetime import datetime
@@ -17,7 +18,7 @@ def create_labels_name(ax1):
 
     for rect, label in zip(rects, labels_name_array):
         height = rect.get_height()
-        ax.text(rect.get_x() + rect.get_width() / 2, height + 1, label,
+        ax.text(rect.get_x() + rect.get_width() / 2, height, label,
                 ha='center', va='bottom')
 
 
@@ -58,7 +59,7 @@ def parse_to_seconds(field):
     return datetime.strptime(field, '%H:%M:%S.%f').second
 
 
-def parse_to_microsecond(field):
+def parse_to_microseconds(field):
     return datetime.strptime(field, '%H:%M:%S.%f').microsecond
 
 
@@ -68,19 +69,19 @@ with open('log.json') as file:
     last_character = get_letter_name_from_str(first_letter['name'])
 
     first_letter_time = (parse_to_seconds(first_letter['pressed']) +
-                         parse_to_microsecond(first_letter['pressed'])/1000000) * 10
+                         parse_to_microseconds(first_letter['pressed'])/1000000) * 10
     append_n_times(x, first_letter_time, ord('a')-1)
 
     array.append((parse_to_seconds(first_letter['pressed']) +
-                 parse_to_microsecond(first_letter['pressed'])/1000000) * 10)
+                 parse_to_microseconds(first_letter['pressed'])/1000000) * 10)
     array.append((parse_to_seconds(first_letter['released']) +
-                 parse_to_microsecond(first_letter['released'])/1000000) * 10)
+                 parse_to_microseconds(first_letter['released'])/1000000) * 10)
 
     if current_field_from_json_file == 'time_after_last_press':
         labels_name_array.append(0)
     else:
         second = parse_to_seconds(first_letter[current_field_from_json_file])
-        microsecond = parse_to_microsecond(first_letter[current_field_from_json_file])
+        microsecond = parse_to_microseconds(first_letter[current_field_from_json_file])
         labels_name_array.append(second + microsecond / 1000000)
 
     for letter_info in data['letters'][1::1]:
@@ -88,32 +89,41 @@ with open('log.json') as file:
         last_value = array[len(array) - 1]
         append_n_times(x, last_value, ord(last_character))
         last_character = get_letter_name_from_str(letter_info['name'])
-        second = parse_to_seconds(letter_info[current_field_from_json_file])
-        microsecond = parse_to_microsecond(letter_info[current_field_from_json_file])
-        labels_name_array.append(second + microsecond/1000000)
-        array.append(last_value + (second + microsecond/1000000) * 10)
+        seconds = parse_to_seconds(letter_info[current_field_from_json_file])
+        microseconds = parse_to_microseconds(letter_info[current_field_from_json_file])
+        labels_name_array.append(seconds + microseconds/1000000)
+        array.append(last_value + (seconds + microseconds/1000000) * 10)
 
     letters_name_array.append(last_character)
-print(labels_name_array)
+
+print(array)
+print(letters_name_array)
+
 bins = array
 hist, bins = np.histogram(x, bins=bins)
 
 width = np.diff(bins)
 center = (bins[:-1] + bins[1:]) / 2
 
-fig, ax = plt.subplots()
-fig.canvas.draw()
 
-ax.bar(center, hist, align='center', width=width, fill=False, edgecolor='r', linewidth=3)
+margins = {
+    "left"   : 0.040,
+    "bottom" : 0.060,
+    "right"  : 0.990,
+    "top"    : 0.990
+}
+
+figure = Figure(facecolor="None")
+figure.subplots_adjust(**margins)
+fig, ax = plt.subplots()
+fig.set_size_inches(20, 15)
+ax.axis('off')
+fig.canvas.draw()
+ax.bar(center, hist, width=width)
 ax.set_xticks(bins)
 ax.set_xticklabels(create_x_labels_name(ax))
 ax.set_yticklabels(create_y_labels_name(ax))
-create_labels_name(ax)
-ax.grid(which='major',
-        color='k')
-fig.savefig("out.png")
-
-
+fig.savefig("out.png", dpi=5)
 
 
 plt.show()

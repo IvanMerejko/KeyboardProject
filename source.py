@@ -4,11 +4,13 @@ import datetime
 import json
 from pathlib import Path
 
+start_time = datetime.datetime.now()
 
 start_json = {}
 start_json["letters"] = []
 with open('log.json', 'w') as file:
     json.dump(start_json, file)
+
 
 
 def write_to_json(key, action, time, is_released = False):
@@ -35,14 +37,14 @@ def on_press(key):
 
     if key != on_press._previous_key or on_press._is_released:
         with open('log.txt', 'a') as f:
-            f.write('{0} pressed, time {1}\n'.format(key, datetime.datetime.now().strftime('%H:%M:%S.%f')))
+            f.write('{0} pressed, time {1}\n'.format(key, datetime.datetime.now() - start_time))
         # print('{0} pressed, time {1}\n'.format(key, datetime.datetime.now().strftime('%H:%M:%S.%f')))
         on_press._previous_pressed_symbol = ''
 
     if key != on_press._previous_key or on_press._is_released:
         write_to_json('{0}'.format(key),
                       'pressed',
-                      '{0}'.format(datetime.datetime.now().strftime('%H:%M:%S.%f')))
+                      '{0}'.format(datetime.datetime.now()- start_time))
 
         on_press._previous_pressed_symbol = key
         on_press._previous_key = key
@@ -51,17 +53,10 @@ def on_press(key):
 
 def on_release(key):
     on_press._is_released = True
-    with open('log.txt', 'a') as f:
-        f.write('{0} release, time {1}\n'.format(key, datetime.datetime.now().strftime('%H:%M:%S.%f')))
-    # print('{0} release, time {1}\n'.format(key, datetime.datetime.now().strftime('%H:%M:%S.%f')))
-
-
-    with open("log.txt", 'w') as f:
-        f.write("")
-        write_to_json('{0}'.format(key),
-                      'released',
-                      '{0}'.format(datetime.datetime.now().strftime('%H:%M:%S.%f')),
-                      True)
+    write_to_json('{0}'.format(key),
+                    'released',
+                    '{0}'.format(datetime.datetime.now() - start_time),
+                    True)
 
 
 # Collect events

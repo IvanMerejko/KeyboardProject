@@ -20,7 +20,7 @@ for letter_info in data['letters']:
     else:
         time_between_pressed = pressed_time - previouse_button_pressed_time
         previouse_button_pressed_time = pressed_time
-        print(time_between_pressed)
+
 
     duration = released_time - pressed_time
     letter_info.setdefault(
