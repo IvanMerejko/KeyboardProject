@@ -4,6 +4,7 @@ from matplotlib.figure import Figure
 import numpy as np
 import json
 from datetime import datetime
+from pynput.keyboard import Key
 
 letters_name_array = []
 letters_str = 'letters'
@@ -22,8 +23,7 @@ def create_labels_name(ax1):
 
 
 def append_n_times(append_to, value, time_number):
-    number = time_number if time_number != ord(' ') else Space_constant + 40
-    for i in range(0, number):
+    for i in range(0, time_number):
         append_to.append(value)
 
 
@@ -52,7 +52,7 @@ def create_x_labels_name(ax1):
 
 
 def get_letter_name_from_str(name_str):
-    return name_str[1]
+    return name_str[1] if len(name_str) == 3 else name_str
 
 
 def parse_to_seconds(field):
@@ -87,7 +87,8 @@ with open('log.json') as file:
     for letter_info in data['letters'][1::1]:
         letters_name_array.append(last_character)
         last_value = array[len(array) - 1]
-        append_n_times(x, last_value, ord(last_character))
+        number = ord(last_character) if len(last_character) == 1 else Space_constant
+        append_n_times(x, last_value, number)
         last_character = get_letter_name_from_str(letter_info['name'])
         seconds = parse_to_seconds(letter_info[current_field_from_json_file])
         microseconds = parse_to_microseconds(letter_info[current_field_from_json_file])
@@ -96,8 +97,7 @@ with open('log.json') as file:
 
     letters_name_array.append(last_character)
 
-print(array)
-print(letters_name_array)
+
 
 bins = array
 hist, bins = np.histogram(x, bins=bins)
