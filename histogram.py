@@ -11,8 +11,7 @@ current_field_from_json_file = 'duration'
 labels_name_array = []
 array = []
 x = [0.0]
-
-
+Space_constant = ord('z') + 1
 def create_labels_name(ax1):
     rects = ax1.patches
 
@@ -23,7 +22,8 @@ def create_labels_name(ax1):
 
 
 def append_n_times(append_to, value, time_number):
-    for i in range(0, time_number):
+    number = time_number if time_number != ord(' ') else Space_constant + 40
+    for i in range(0, number):
         append_to.append(value)
 
 
@@ -32,11 +32,11 @@ def create_y_labels_name(ax1):
     z_value = ord('z')
     constant_for_add = 95
     ax1.set_ylim(a_value-1, z_value+1)
-    ax1.set_yticks(np.arange(a_value-1, z_value+1, 1))
+    ax1.set_yticks(np.arange(a_value-1, z_value+2, 1))
     ax1.yaxis.set_major_locator(ticker.MultipleLocator(1))
     labels = [item.get_text() for item in ax1.get_yticklabels()]
     for i in range(0, len(labels)):
-        if i + constant_for_add in range(ord('a'), ord('z')+1):
+        if i + constant_for_add in range(ord('a'), ord('z')+2):
             labels[i] = chr(i + constant_for_add)
         else:
             labels[i] = ''
