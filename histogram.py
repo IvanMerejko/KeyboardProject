@@ -14,6 +14,17 @@ current_field_from_json_file = 'duration'
 labels_name_array = []
 array = []
 x = [0.0]
+special_constant = {
+    'Key.space': ord('z') + 1,
+    'Key.shift': ord('z') + 2,
+    'Key.backspace': ord('z') + 3,
+    'Key.tab': ord('z') + 4,
+    'Key.caps_lock': ord('z') + 5,
+    'Key.shift_r': ord('z') + 6,
+    'Key.shift_l': ord('z') + 7,
+    'Key.enter': ord('z') + 8
+}
+
 Space_constant = ord('z') + 1
 print(Space_constant)
 def create_labels_name(ax1):
@@ -55,7 +66,10 @@ def create_x_labels_name(ax1):
 
 
 def get_letter_name_from_str(name_str):
-    return name_str[1] if len(name_str) == 3 else name_str
+    print("get_letter_name_from_str = ", name_str)
+    if name_str in special_constant.keys():
+        return name_str
+    return name_str[1]
 
 
 def parse_to_seconds(field):
@@ -74,7 +88,8 @@ def parse_one_file(file_name, file_number):
 
         first_letter_time = (parse_to_seconds(first_letter['pressed']) +
                              parse_to_microseconds(first_letter['pressed'])/1000000) * 10
-        append_n_times(x, first_letter_time, ord('a')-1)
+        number_for_first = ord(last_character) if len(last_character) == 1 else special_constant[last_character]
+        append_n_times(x, first_letter_time, number_for_first)
 
         array.append((parse_to_seconds(first_letter['pressed']) +
                      parse_to_microseconds(first_letter['pressed'])/1000000) * 10)
@@ -92,7 +107,8 @@ def parse_one_file(file_name, file_number):
             print(letter_info)
             letters_name_array.append(last_character)
             last_value = array[len(array) - 1]
-            number = ord(last_character) if len(last_character) == 1 else Space_constant
+            print(last_character)
+            number = ord(last_character) if len(last_character) == 1 else special_constant[last_character]
             print(number)
             append_n_times(x, last_value, number)
             last_character = get_letter_name_from_str(letter_info['name'])
@@ -102,6 +118,7 @@ def parse_one_file(file_name, file_number):
             array.append(last_value + (seconds + microseconds/1000000) * 10)
 
         letters_name_array.append(last_character)
+    print(x)
     bins = array
     hist, bins = np.histogram(x, bins=bins)
     width = np.diff(bins)
