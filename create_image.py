@@ -7,6 +7,12 @@ duration_filed = 'duration'
 last_pressed_time_field = 'time_after_last_press'
 symbols_number = 40
 matrix = dict()
+
+special_keys = {
+    ' ': ord('z') - ord('a') + 1
+}
+
+
 def parse_to_seconds(field):
     return datetime.strptime(field, '%H:%M:%S.%f').second
 
@@ -14,33 +20,41 @@ def parse_to_seconds(field):
 def parse_to_microseconds(field):
     return datetime.strptime(field, '%H:%M:%S.%f').microsecond
 
+
 def get_letter_int(letter):
+    if letter in special_keys.keys():
+        return special_keys[letter]
     return ord(letter) - ord('a')
+
 
 def get_color(second, microsecond):
     constant = 1000000
-    return (second * constant + microsecond) / constant
+    return (float)(second * constant + microsecond) / constant
+
 
 def get_duration(letter_info):
     second = parse_to_seconds(letter_info[duration_filed])
     microsecond = parse_to_microseconds(letter_info[duration_filed])
     return get_color(second, microsecond)
 
+
 def get_time_after_last_pressed(letter_info):
     second = parse_to_seconds(letter_info[last_pressed_time_field])
     microsecond = parse_to_microseconds(letter_info[last_pressed_time_field])
     return get_color(second, microsecond)
 
+
 def get_symbol_color(letter_info):
-    if len(letter_info['name']) == 3:
-        return get_letter_int(letter_info['name'][1]) / symbols_number
+    return get_letter_int(letter_info['name']) / symbols_number
+
 
 def get_line_number(name):
-    if len(name) == 3:
-        return ord(name[1]) - ord('a')
+    return get_letter_int(name)
+
 
 def scale(value):
     return (int)(value * 255)
+
 
 def create_image():
     image = Image.new('RGB', (40, 40))
@@ -50,8 +64,8 @@ def create_image():
 
         x, y = point
         r, g, b= matrix[point]
-        for i in range(y, 40):
-            draw.point((x, i), (scale(r), scale(g), scale(b)))
+        # for i in range(y, 40):
+        #     draw.point((x, i), (scale(r), scale(g), scale(b)))
 
         draw.point((x, y), (scale(r), scale(g), scale(b)))
     image.save('try1.png')
@@ -64,8 +78,14 @@ def parse_one_file(file_name, file_number):
     with open(file_name) as file:
         data = json.load(file)
         first_letter = data['letters'][0]
-        print(get_letter_int(first_letter['name'][1]))
+        matrix[(current_column, get_line_number(first_letter['name']))] = \
+            {
+                get_symbol_color(first_letter),
+                get_duration(first_letter),
+                0
+            }
         for letter_info in data['letters'][1::1]:
+            print(letter_info['name'], get_line_number(letter_info['name']))
             matrix[(current_column, get_line_number(letter_info['name']))] = \
             {
                 get_symbol_color(letter_info),
@@ -75,11 +95,7 @@ def parse_one_file(file_name, file_number):
             current_column += 1
 
 
-number = 1
-dir_path = "{name}".format(name=user_name)
-for file in os.listdir(dir_path):
-    parse_one_file('diana.843670.json', number)
-    create_image()
-    number += 1
-
+parse_one_file('{0}.json'.format(user_name), 1)
 print(matrix)
+create_image()
+
