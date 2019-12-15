@@ -38,5 +38,23 @@ def parse_one_file(path):
 
 dir_path = "{name}".format(name=user_name)
 for file in os.listdir(dir_path):
-    parse_one_file(Path(dir_path+'/'+file))
+    parse_one_file(Path('diana.618439.json'
+                        ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
